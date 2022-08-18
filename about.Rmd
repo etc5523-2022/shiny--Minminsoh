@@ -20,7 +20,7 @@ The data showed obvious signs of bimodality (both in the marginal and joint dist
 
 #### Creator
 
-Emi Tanaka (emi.tanaka@monash.edu)
+Min Min Soh (mmsoh1@monash.edu)
 
 <details>
 <summary>Session information</summary>
