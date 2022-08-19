@@ -6,7 +6,7 @@ library(usmap)
 library(sf)
 
 #Import Data
-df <-read_csv("week16_exercise.csv")
+df <-read_csv("data/week16_exercise.csv")
 df <- df %>%
   mutate(state = tolower(state))%>%
   filter(state != "state_average")
@@ -21,6 +21,14 @@ Hawaii_Alaska <- data.frame(region = c("alaska","hawaii"),
                             centroid_long = c(-149.4937, -155.5828),
                             centroid_lat = c(64.2008, 19.8968))
 centroids <- rbind(centroids, Hawaii_Alaska)
+
+#Compute average exercise rate  by gender and work status
+df_average <- df %>% filter(!is.na(exercise))
+df1<- df_average %>% filter(work_status == "working") %>% summarise(average_work = mean(exercise))
+df2<- df_average %>% filter(work_status == "non_working") %>% summarise(average_nonwork = mean(exercise))
+df3 <- df_average %>% filter(sex== "male") %>% summarise(average_male = mean(exercise))
+df4<- df_average %>% filter(sex== "female") %>% summarise(average_female = mean(exercise))
+df_average <- bind_cols(df1, df2,df3,df4) %>% round(digits = 0)
 
 #Compute average exercise rate by gender in each state
 df_gender <- df %>% select(!work_status) %>% filter(sex!= "both")
@@ -69,10 +77,29 @@ ui <- fluidPage(
                       fluidRow(column(11,
                                       div(class = "about",
                                           uiOutput('about')))),
-                      includeCSS("style.css")),
+                      includeCSS("styles.css")),
 
-             tabPanel("Analysis", fluid = TRUE, icon = icon("person-walking"),
-                      titlePanel("Has working affected the average exercise rate in the United States?"),
+             tabPanel("Analysis", fluid = TRUE, icon = icon("earth-americas"),
+                      titlePanel("Physical Activity - Statistics in US"),
+                      sidebarLayout(sidebarPanel(
+                        fluidRow(column(10, radioButtons (inputId = "Guess1",
+                                                          label = "On average, do working population or non-working population exercise more in the United States?  ",
+                                                          choices = c("Working", "Non working"),
+                                                          inline = TRUE ),
+                                        radioButtons(inputId = "Guess2",
+                                                     label = "On average, do male or female exercise more in the United States?  ",
+                                                     choices = c("Male", "Female"),
+                                                     inline = TRUE),
+                                        actionButton("submit", "Submit your guess!"))),
+                      ),
+                      mainPanel(textOutput("message1"),
+                                br(),
+                                textOutput("message2"))
+
+                      )),
+
+             tabPanel("Demographics", fluid = TRUE, icon = icon("person-walking"),
+                      titlePanel("Has working affected the average exercise rate at state(s) level in the United States?"),
                       sidebarLayout(
                         sidebarPanel(
                           tags$style(type = "text/css", "html, body {width:100%;height:100%; font-family: Oswald, sans-serif;}"),
@@ -107,6 +134,25 @@ ui <- fluidPage(
   ))
 
 server <- function(input, output, session) {
+
+  #second tab
+  output$message1 <- renderText({
+    if(input$Guess1 == "Working"){
+      paste("Correct!", "On average", "average exercise rate of working people in US is", df_average[1,1], "%  as compared to", df_average[1,2], "% of non working people")
+    }else if(input$Guess1 == "Non working"){
+      paste("Wrong guess!", "On average", "average exercise rate of working people in US is", df_average[1,1], "%  as compared to", df_average[1,2], "% of non working people")
+    }
+  }) %>% bindEvent(input$submit)
+
+  output$message2 <- renderText({
+    if(input$Guess2 == "Male"){
+      paste("Correct!", "On average", "Male has a higher average exercise rate of", df_average[1,3], "%  as compared to female, which is at", df_average[1,4], "%.")
+    }else if(input$Guess2 == "Female"){
+      paste("Wrong guess!", "On average", "Male has a higher average exercise rate of", df_average[1,3], "%  as compared to female, which is at", df_average[1,4], "%.")
+    }
+  })%>%bindEvent(input$submit)
+
+
 
   df_finder<-reactive({
     filter(df_work_states, region %in% input$State)
