@@ -68,10 +68,10 @@ ui <- fluidPage(
                                           uiOutput('about')))),
                       includeCSS("styles.css")),
 
-             tabPanel("Analysis", fluid = TRUE, icon = icon("earth-americas"),
-                      titlePanel("Physical Activity - Statistics in US"),
+             tabPanel("Fact questions", fluid = TRUE, icon = icon("earth-americas"),
+                      titlePanel("Physical Activity - Statistics in the United States (US)"),
                       sidebarLayout(sidebarPanel(
-                        fluidRow(column(10, div(radioButtons (inputId = "Guess1",
+                        fluidRow(column(12, div(radioButtons (inputId = "Guess1",
                                                               label = "On average, do working population or non-working population exercise more in the United States?  ",
                                                               choices = c("Working", "Non working"),
                                                               inline = TRUE ),
@@ -81,7 +81,7 @@ ui <- fluidPage(
                                                              inline = TRUE),
                                                 class = "guess"),
                                         br(),
-                                        actionButton("submit", "Submit your guess!", class = "btn-danger"))),
+                                        actionButton("submit", "Submit your guess!", class = "btn-lg btn-success"))),
                       ),
                       mainPanel(
                         strong(textOutput("message1")),
@@ -96,11 +96,11 @@ ui <- fluidPage(
              tabPanel("Demographics", fluid = TRUE, icon = icon("person-walking"),
                       titlePanel("Pick a topic of interest : Working or Gender which affected the average exercise rate in the particular state(s) in the United States?"),
                       sidebarLayout(
-                        sidebarPanel(radioButtons(inputId = "topic", label = "Select topic of interest:", choices = c("Work Status", "Gender"), inline=TRUE),
-                                     uiOutput("conditional")),
+                        sidebarPanel(div(radioButtons(inputId = "topic", label = "Select topic of interest:", choices = c("Work Status", "Gender"), inline=TRUE),
+                                     uiOutput("conditional")), class = "guess" ),
 
                         mainPanel(
-                          plotOutput(outputId = "stateinfo", click = "plot_click"),
+                          plotOutput(outputId = "stateinfo"),
                           textOutput("info"),
                           br(),
                           fluidRow(column(width = 3, offset = 2, actionButton("click", "Click on the button to show the bar graph comparison",icon = icon("bar-chart-o"), class = "btn-lg btn-success"))),
@@ -115,28 +115,28 @@ server <- function(input, output, session) {
   #second tab
   output$message1 <- renderText({
     if(input$Guess1 == "Working"){
-      paste("Correct!", "On average", "average exercise rate of working people in US is", df_average[1,1], "%  as compared to", df_average[1,2], "% of non working people")
+      paste("Correct!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], ".")
     }else if(input$Guess1 == "Non working"){
-      paste("Wrong guess!", "On average", "average exercise rate of working people in US is", df_average[1,1], "%  as compared to", df_average[1,2], "% of non working people")
+      paste("Wrong guess!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], ".")
     }
   }) %>% bindEvent(input$submit)
 
   output$message2 <- renderText({
     if(input$Guess2 == "Male"){
-      paste("Correct!", "On average", "Male has a higher average exercise rate of", df_average[1,3], "%  as compared to female, which is at", df_average[1,4], "%.")
+      paste("Correct!", "On average", "male has a higher average exercise rate of", df_average[1,3], "%  as compared to female, which is at", df_average[1,4], "%.")
     }else if(input$Guess2 == "Female"){
-      paste("Wrong guess!", "On average", "Male has a higher average exercise rate of", df_average[1,3], "%  as compared to female, which is at", df_average[1,4], "%.")
+      paste("Wrong guess!", "On average", "male has a higher average exercise rate of", df_average[1,3], "%  as compared to female, which is at", df_average[1,4], "%.")
     }
   })%>%bindEvent(input$submit)
 
   output$message3 <- renderText({
-    paste("Tips : Go to next tab for further analysis on the average exercise rate in each state(s) in the United States by Gender or Work Status")
+    paste("Tips : Go to next tab - Demographics for further analysis on the average exercise rate in selected state(s) in the United States by Gender or Work Status")
   })%>%bindEvent(input$submit)
 
   # Third tab
   df_finder<-reactive({
     filter(df_analysis, region %in% input$State)
-  }) #%>% bindEvent(input$State) #observeEvent , detailed master shiny...
+  })
 
 
   centroid_finder <- reactive ({
@@ -150,7 +150,7 @@ server <- function(input, output, session) {
   output$conditional <- renderUI({
     if(input$topic == "Work Status"){
       tagList(
-        h4("Has working affected the average exercise rate at state(s) level in the United States?"),
+        h4(div("Has working affected the average exercise rate at state(s) level in the United States?"), class = "white"),
         fluidRow(column (4,
                          radioButtons (inputId = "Workstatus",
                                        label = "Select work status:",
@@ -165,7 +165,7 @@ server <- function(input, output, session) {
                               multiple=TRUE))
         ))} else if(input$topic == "Gender") {
           tagList(
-            h4("Gender differences in response to average exercise rate at state(s) level in the United States"),
+            h4(div("Gender differences in response to average exercise rate at state(s) level in the United States"), class = "white"),
             fluidRow(column (4,
                              radioButtons (inputId = "Gender",
                                            label = "Select gender:",
@@ -174,7 +174,7 @@ server <- function(input, output, session) {
             ),
             column(5,
                    selectizeInput(inputId = "State",
-                                  label = "Select state(s):",
+                                  label = "Select state(s) for comparison:",
                                   choices = states,
                                   selected = c("alabama", "florida"),
                                   multiple=TRUE))))
@@ -209,25 +209,6 @@ server <- function(input, output, session) {
     }
   })
 
-  output$info <- renderText({
-    req(input$plot_click)
-    y <- if(input$topic == "Work Status"){
-      if(input$Workstatus == "working"){
-        df_table()$average_work
-      }else if (input$Workstatus == "non working"){
-        df_table()$average_nonwork
-      }
-    }else if (input$topic == "Gender"){
-      if(input$Gender == "Male"){
-        df_table()$male
-      }else if (input$Gender == "Female"){
-        df_table()$female
-      }
-    }
-    paste("On average, average exercise rate in", x[1,1], "is", y, "%.")
-  })
-
-
 
   table_data <- reactive({
     df_wide <- df_gw %>% pivot_longer(cols = -region, names_to = "demographics", values_to = "avg_rate")
@@ -242,13 +223,17 @@ server <- function(input, output, session) {
       ggplot(data = table_data(), aes(x = reorder(region, avg_rate), y = avg_rate, fill = demographics))+
         geom_col()+
         theme( axis.text.x = element_text(angle=45, hjust = 1)) + labs(x = "States", y = "Average Exercise Rate")+
-        facet_wrap(~demographics)
+        facet_wrap(~demographics)+
+        scale_fill_discrete(breaks = c("average_work", "average_nonwork", "female", "male"),
+                            labels = c ("Working" , "Non working", "Female", "Male"))+
+        ggtitle("Average Exercise Rate by Gender and Work Status of the state(s) selected")
+
 
     } else {
       ""
     }
 
-  },  width = 600 , height = "auto", res = 96)%>% bindEvent(input$topic,input$click, input$Gender , input$Workstatus, input$State)
+  },  width = 800 , height = "auto", res = 96)%>% bindEvent(input$topic,input$click, input$Gender , input$Workstatus, input$State)
 
   output$about <- renderUI({
     knitr::knit("about.Rmd", quiet = TRUE) %>%
