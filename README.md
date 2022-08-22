@@ -8,4 +8,4 @@ This is the app developed for the ETC5523 Assessment 1.
 
 The goal of the app is in part explanatory (identify demographics factors that affect average exercise rate in US) and in part descriptive and presentation (describing and presenting the average exercise rate in the states by demographics).
 
-The link to the app can be found at [https://ebsmonash.shinyapps.io/etc5523-assessment1-sample/](https://ebsmonash.shinyapps.io/etc5523-assessment1-sample/)
+The app works locally but somehow there is an issue publishing it to the shinyapps.io.  [https://etraio-min0min-soh.shinyapps.io/shiny--ETC5521assessment1--Minminsoh/](https://etraio-min0min-soh.shinyapps.io/shiny--ETC5521assessment1--Minminsoh/)

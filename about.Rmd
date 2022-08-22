@@ -17,7 +17,7 @@ There are a few aspects demonstrated by this app. Firstly, the second tab, "Fact
 
 #### Creator
 
-Min Min Soh (mmsoh1@monash.edu)
+Min Min Soh (mmsoh1@student.monash.edu)
 
 <details>
 <summary>Session information</summary>

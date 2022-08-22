@@ -54,7 +54,7 @@ df_work <- left_join(exercise_work, exercise_nonwork, by = "state") %>%
   rename(region = state)
 
 # Combine dataframe with US map
-df_gw <-left_join(df_gender, df_work, by = "region")
+df_gw <-left_join(df_gender, df_work, by = "region") %>% rename(working = average_work, non_working = average_nonwork)
 df_analysis <- left_join(df_gw, states_map, by = "region")
 
 
@@ -112,7 +112,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  #second tab
+#Second tab - Fact Questions - Render messages
   output$message1 <- renderText({
     if(input$Guess1 == "Working"){
       paste("Correct!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], ".")
@@ -133,16 +133,16 @@ server <- function(input, output, session) {
     paste("Tips : Go to next tab - Demographics for further analysis on the average exercise rate in selected state(s) in the United States by Gender or Work Status")
   })%>%bindEvent(input$submit)
 
-  # Third tab
+#Third tab - Demographics
+# df analysis includes the latitude and longitude for plotting the US map
   df_finder<-reactive({
     filter(df_analysis, region %in% input$State)
   })
 
-
   centroid_finder <- reactive ({
     filter(centroids, region %in% input$State)
   })
-
+#df table for plotting bar graph comparison
   df_table <- reactive({
     filter(df_gw, region %in% input$State)
   })
@@ -181,7 +181,7 @@ server <- function(input, output, session) {
         }
   })
 
-
+#plot us map
   output$stateinfo<- renderPlot({
 
     fill_finder <- function(fill_by){
@@ -196,9 +196,9 @@ server <- function(input, output, session) {
 
     if(input$topic == "Work Status"){
       if(input$Workstatus == "working"){
-        fill_finder("average_work")
+        fill_finder("working")
       }else if (input$Workstatus == "non working"){
-        fill_finder("average_nonwork")
+        fill_finder("non_working")
       }
     }else if (input$topic == "Gender"){
       if(input$Gender == "Male"){
@@ -209,13 +209,13 @@ server <- function(input, output, session) {
     }
   })
 
-
+# pivot longer df for bar graph comparison using facet wrap
   table_data <- reactive({
     df_wide <- df_gw %>% pivot_longer(cols = -region, names_to = "demographics", values_to = "avg_rate")
     filter(df_wide, region %in% input$State)
   }) %>% bindEvent(input$topic, input$State)
 
-
+# plot bar graph
   output$bargraph<- renderPlot({
 
     if(input$click){
@@ -224,7 +224,7 @@ server <- function(input, output, session) {
         geom_col()+
         theme( axis.text.x = element_text(angle=45, hjust = 1)) + labs(x = "States", y = "Average Exercise Rate")+
         facet_wrap(~demographics)+
-        scale_fill_discrete(breaks = c("average_work", "average_nonwork", "female", "male"),
+        scale_fill_discrete(breaks = c("working", "non_working", "female", "male"),
                             labels = c ("Working" , "Non working", "Female", "Male"))+
         ggtitle("Average Exercise Rate by Gender and Work Status of the state(s) selected")
 
@@ -242,11 +242,6 @@ server <- function(input, output, session) {
   })
 
 
-  output$about <- renderUI({
-    knitr::knit("about.Rmd", quiet = TRUE) %>%
-      markdown::markdownToHTML(fragment.only = TRUE) %>%
-      HTML()
-  })
 
 }
 
