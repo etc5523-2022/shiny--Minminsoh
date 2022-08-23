@@ -115,9 +115,9 @@ server <- function(input, output, session) {
 #Second tab - Fact Questions - Render messages
   output$message1 <- renderText({
     if(input$Guess1 == "Working"){
-      paste("Correct!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], ".")
+      paste("Correct!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], "%.")
     }else if(input$Guess1 == "Non working"){
-      paste("Wrong guess!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], ".")
+      paste("Wrong guess!", "On average", "working people has a higher average exercise rate of", df_average[1,1], "% in the US as compared to non working people, which is at the rate of", df_average[1,2], "%.")
     }
   }) %>% bindEvent(input$submit)
 
