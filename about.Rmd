@@ -7,7 +7,7 @@ This data shows the average exercise rates by gender and work status at state(s)
 
 The purpose of the app is to:
 
-1. let the user to guess which demographic (i.e. gender and work status) exercises more in the USA and reveal the statistics, 
+1. let the user to guess which demographic (i.e. gender and work status) and which states in the USA exercises more and reveal the statistics, 
 2. allow user to choose a topic of interest (gender or workstatus) to further analyse on the average exercise rate in each state as compared to other state(s) chosen in the United States by using visual cues or representations (i.e. map of USA),
 3. Interactively show how the different plot choices by further clicking to show the bar graph comparisons on demographics on the state(s) levels, which make data easier to understand and display comparisons clearly. 
 
